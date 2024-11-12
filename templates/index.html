@@ -3,130 +3,226 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gesture Recognition Test</title>
-    <link rel="stylesheet" href="styles.css">
+    <title>Real-Time Gesture Recognition</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&family=Montserrat:wght@400;700&display=swap" rel="stylesheet">
     <style>
         /* Reset */
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
+            transition: color 0.3s ease, background-color 0.3s ease;
         }
 
-        /* Body Styling */
+        /* Root Variables */
+        :root {
+            --bg-light: linear-gradient(135deg, #f5f5f5, #d9e4f5);
+            --bg-dark: linear-gradient(135deg, #121212, #333);
+            --text-light: #222;
+            --text-dark: #f5f5f5;
+            --primary-color: #ff7f50;
+            --secondary-color: #e67353;
+            --button-hover: #ff6f3f;
+        }
+
+        /* Body */
         body {
-            background-color: antiquewhite;
-            font-family: 'Arial', sans-serif;
+            font-family: 'Roboto', sans-serif;
             display: flex;
-            flex-direction: column;
             align-items: center;
             justify-content: center;
             min-height: 100vh;
+            background: var(--bg-light);
+            color: var(--text-light);
+            transition: background-color 0.3s ease, color 0.3s ease;
         }
 
-        /* Header */
+        body.dark-mode {
+            background: var(--bg-dark);
+            color: var(--text-dark);
+        }
+
+        /* Container */
+        .container {
+            display: flex;
+            flex-direction: row;
+            align-items: flex-start;
+            max-width: 1200px;
+            width: 100%;
+            padding: 20px;
+            gap: 40px;
+        }
+
+        /* Left Section (Webcam) */
+        .webcam-container {
+            flex: 1;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+        }
+
+        #video {
+            border: 5px solid var(--primary-color);
+            border-radius: 10px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+            width: 100%;
+            max-width: 640px;
+            height: auto;
+            transition: transform 0.3s ease;
+        }
+
+        #video:hover {
+            transform: scale(1.02);
+        }
+
+        /* Right Section (Controls) */
+        .controls-container {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+            background-color: rgba(255, 255, 255, 0.8);
+            border-radius: 10px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
         h1 {
-            font-size: 2.5rem;
-            color: #333;
+            font-family: 'Montserrat', sans-serif;
+            font-size: 2rem;
+            color: inherit;
             margin-bottom: 20px;
             text-align: center;
         }
 
-        /* Video */
-        video {
-            border: 5px solid #333;
-            border-radius: 8px;
-            margin-bottom: 20px;
-        }
-
-        /* Button Styling */
         button {
-            padding: 10px 20px;
+            padding: 12px 24px;
             font-size: 1rem;
-            color: #333;
-            background-color: bisque;
+            font-weight: bold;
+            color: var(--text-light);
+            background-color: var(--primary-color);
             border: none;
-            border-radius: 5px;
+            border-radius: 8px;
             cursor: pointer;
-            margin-bottom: 20px;
-            transition: background-color 0.3s ease;
+            margin: 20px 0;
+            transition: background-color 0.3s ease, transform 0.3s ease;
         }
 
         button:hover {
-            background-color: #e0c4a6;
+            background-color: var(--button-hover);
+            transform: scale(1.05);
         }
 
-        /* Label and Select Styling */
-        label {
+        /* Dark Mode Toggle */
+        .toggle-dark-mode {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background-color: transparent;
+            border: none;
+            cursor: pointer;
             font-size: 1.2rem;
-            font-weight: 500;
-            color: #333;
+            color: inherit;
+        }
+
+        /* Select and Label */
+        .language-select {
+            display: flex;
+            align-items: center;
+            margin-bottom: 20px;
+            font-weight: 600;
+        }
+
+        label {
+            font-size: 1rem;
+            color: inherit;
             margin-right: 10px;
         }
 
         select {
-            padding: 5px 10px;
+            padding: 8px 12px;
             font-size: 1rem;
-            border: 1px solid #ccc;
-            border-radius: 5px;
-            margin-bottom: 20px;
+            border: 2px solid #ccc;
+            border-radius: 8px;
         }
 
         /* Prediction Output */
         p#prediction {
-            font-size: 1.5rem;
+            font-size: 1.2rem;
             font-weight: 600;
-            color: #333;
-            margin-top: 20px;
+            text-align: center;
+            margin: 20px 0;
         }
 
         /* Processed Image */
-        /* img#processed_image {
+        #processed_image {
             margin-top: 20px;
-            border-radius: 8px;
+            border-radius: 10px;
             max-width: 100%;
             height: auto;
-        } */
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            display: none;
+        }
 
         /* Audio Element */
-        audio#audio {
+        #audio {
             margin-top: 20px;
             width: 100%;
             max-width: 640px;
+            display: none;
         }
     </style>
 </head>
 <body>
-    <h1>Real-Time Gesture Recognition</h1>
-    <video id="video" width="640" height="480" autoplay></video>
-    <button id="capture">Capture & Predict</button>
-    <div>
-        <label for="language">Choose a language:</label>
-        <select id="language">
-            <option value="en">English</option>
-            <option value="hi">Hindi</option>
-            <option value="bn">Bengali</option>
-            <option value="pa">Punjabi</option>
-            <option value="mr">Marathi</option>
-            <option value="ml">Malayalam</option>
-            <option value="ta">Tamil</option>
-            <option value="te">Telugu</option>
-            <option value="gu">Gujarati</option>
-            <option value="ur">Urdu</option>
-            <!-- Add more languages as needed -->
-        </select>
+    <button class="toggle-dark-mode" onclick="toggleDarkMode()">🌙</button>
+    <div class="container">
+        <!-- Webcam Section -->
+        <div class="webcam-container">
+            <video id="video" autoplay></video>
+        </div>
+
+        <!-- Controls Section -->
+        <div class="controls-container">
+            <h1>Real-Time Gesture Recognition</h1>
+            <button id="capture">Capture & Predict</button>
+            <div class="language-select">
+                <label for="language">Choose a language:</label>
+                <select id="language">
+                    <option value="en">English</option>
+                    <option value="hi">Hindi</option>
+                    <option value="bn">Bengali</option>
+                    <option value="pa">Punjabi</option>
+                    <option value="mr">Marathi</option>
+                    <option value="ml">Malayalam</option>
+                    <option value="ta">Tamil</option>
+                    <option value="te">Telugu</option>
+                    <option value="gu">Gujarati</option>
+                    <option value="ur">Urdu</option>
+                </select>
+            </div>
+            <p id="prediction">Prediction Sentence: <span id="prediction_sentence"></span></p>
+            <img id="processed_image">
+            <audio id="audio" controls></audio>
+        </div>
     </div>
-    <p id="prediction"></p>
-    <img id="processed_image" style="display: none;">
-    <audio id="audio" controls style="display: none;"></audio>
 
     <script>
         const video = document.getElementById('video');
         const captureButton = document.getElementById('capture');
-        const predictionElement = document.getElementById('prediction');
+        const predictionElement = document.getElementById('prediction_sentence');
         const processedImageElement = document.getElementById('processed_image');
         const languageSelect = document.getElementById('language');
         const audioElement = document.getElementById('audio');
+        const body = document.body;
+
+        let sentence = '';
+
+        // Toggle Dark Mode
+        function toggleDarkMode() {
+            body.classList.toggle('dark-mode');
+            document.querySelector('.toggle-dark-mode').textContent = body.classList.contains('dark-mode') ? '☀️' : '🌙';
+        }
 
         // Access the camera
         navigator.mediaDevices.getUserMedia({ video: true })
@@ -137,7 +233,7 @@
                 console.error('Error accessing the camera: ', err);
             });
 
-        // Capture the frame and send for prediction
+        // Capture and send frame for prediction
         captureButton.addEventListener('click', () => {
             const canvas = document.createElement('canvas');
             canvas.width = video.videoWidth;
@@ -157,9 +253,13 @@
                 .then(response => response.json())
                 .then(data => {
                     if (data.prediction) {
-                        predictionElement.textContent = `Prediction: ${data.prediction}`;
-                        processedImageElement.src = `data:image/jpeg;base64,${data.image}`;
-                        processedImageElement.style.display = 'block';
+                        sentence += data.prediction + ' ';
+                        predictionElement.textContent = sentence;
+
+                        if (data.image) {
+                            processedImageElement.src = `data:image/jpeg;base64,${data.image}`;
+                            processedImageElement.style.display = 'block';
+                        }
 
                         if (data.audio_file) {
                             audioElement.src = data.audio_file;
@@ -180,4 +280,3 @@
         });
     </script>
 </body>
-</html>
